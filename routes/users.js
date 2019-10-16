@@ -4,12 +4,13 @@
 var passport = require('passport');
 var jwt = require('jsonwebtoken');
 var JWT_SECRET = require('./index').JWT_SECRET;
-var JWT_ISSUER = 'rikitraki.com';
+var JWT_ISSUER = 'rikitraki.mah.priv.at';
 
 var mailgunApiKey = process.env.MAILGUN_API_KEY;
-var mailgunDomain = 'rikitraki.com';
-var mailgunFrom = 'RikiTraki<noreply@rikitraki.com>';
-var mailgun = require('mailgun-js')({apiKey: mailgunApiKey, domain: mailgunDomain});
+var mailgunDomain = 'mg.mah.priv.at';
+var mailgunFrom = 'RikiTraki<noreply@mg.mah.priv.at>';
+var mailgunAPI = 'api.eu.mailgun.net';
+var mailgun = require('mailgun-js')({apiKey: mailgunApiKey, domain: mailgunDomain, host: mailgunAPI});
 var mailcomposer = require('mailcomposer');
 
 var log4js = require('log4js');
