@@ -1,0 +1,13 @@
+# environment variables passed to 'node rikitrakiws.js'
+
+
+# replace - for instance by running 'pwgen 64 1'
+export JWT_SECRET=Eexoo3de9Oovi2ahJ1ohva4uQu3Doph4Aev1aT9aiguugheek8chah0mohpoim6H
+
+# sign up at mailgun.com for a free key
+export MAILGUN_API_KEY=<fixme>
+
+export MONGODB_DB_URL=mongodb://localhost:27017/rikitraki
+
+# JS logger
+export LOGLEVEL=DEBUG
