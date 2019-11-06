@@ -1,0 +1,29 @@
+[Unit]
+Description=Rikitraki Backend Webservice
+After=network.target
+After=mongod.service
+StartLimitBurst=5
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+
+
+ProtectSystem=strict
+ProtectHome=strict
+StandardOutput=append:/var/log/rikitraki/rikitrakiws.stdout.log
+StandardError=append:/var/log/rikitraki/rikitrakiws.stderr.log
+
+EnvironmentFile=/etc/default/rikitrakiws
+User=rikitraki
+WorkingDirectory=/home/rikitraki/rikitrakiws
+
+ExecStart=/usr/bin/node  rikitrakiws.js
+# for chrome debugging
+#ExecStart=/usr/bin/node --inspect-brk=127.0.0.1:9230  rikitrakiws.js
+
+
+[Install]
+WantedBy=multi-user.target
