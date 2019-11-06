@@ -36,8 +36,8 @@ module.exports = function (router, db) {
 						distance = distance ? distance : 0;
 					}
 					query = {trackGeoJson: {$near: {$geometry: {type: 'Point', coordinates: lnglat}, '$maxDistance': distance}}};
-					logger.info('query', query);	
-				} 
+					logger.info('query', query);
+				}
 			}
 		}
 
@@ -79,7 +79,7 @@ module.exports = function (router, db) {
 			if (filter.region) {
 				query.trackRegionTags = {$in: [filter.region]};
 			}
-		} 
+		}
 		logger.info('query', query);
 		return query;
 	}
@@ -94,27 +94,29 @@ module.exports = function (router, db) {
 				p = {_id: false,
 						trackId: true,
 						trackLatLng: true,
-						trackRegionTags: true, 
+						trackRegionTags: true,
 					 	trackLevel: true,
 					 	trackType: true,
 					 	trackFav: true,
-					 	trackName: true,
+						trackName: true,
+						trackVehicle: true,
 					 	username: true,
 					 	isDraft: true};
 			} else {
 				p = {_id: false,
 						trackId: true,
 						trackLatLng: true,
-						trackRegionTags: true, 
+						trackRegionTags: true,
 					 	trackLevel: true,
 					 	trackType: true,
 					 	trackFav: true,
-					 	trackGPX: true, 
-					 	trackName: true, 
+					 	trackGPX: true,
+					 	trackName: true,
+						trackVehicle: true,
 					 	trackDescription: true,
 					 	hasPhotos: true,
 					 	username: true,
-					 	isDraft: true};			
+					 	isDraft: true};
 			}
 
 			var query = buildTracksQuery(req.query);
@@ -135,7 +137,7 @@ module.exports = function (router, db) {
 					}
 				});
 			});
-		}); 
+		});
 	});
 
 	router.get('/v1/tracks/number', function(req, res) {
@@ -192,15 +194,15 @@ module.exports = function (router, db) {
 			db.collection('tracks').insert(req.body, {w: 1}, function(err) {
 				if (err) {
 					logger.error('database error', err.message);
-					res.status(507).send({error: 'DatabaseInsertError', description: err.message});			
+					res.status(507).send({error: 'DatabaseInsertError', description: err.message});
 				} else {
 					res.status(201).send({trackId: req.body.trackId});
 				}
-			}); 
+			});
 
 		} else {
 			logger.error('validator ', v.errors);
-			res.status(400).send({error: 'InvalidInput','description': v.errors});			
+			res.status(400).send({error: 'InvalidInput','description': v.errors});
 		}
 	});
 
@@ -217,7 +219,7 @@ module.exports = function (router, db) {
 		db.collection('pictures').insert(picDoc, {w: 1}, function(err) {
 			if (err) {
 				logger.error('database error', err.message);
-				res.status(507).send({error: 'DatabaseInsertError', description: err.message});			
+				res.status(507).send({error: 'DatabaseInsertError', description: err.message});
 			} else {
 				res.status(201).send({trackId: req.params.trackId, picIndex: req.params.picIndex});
 			}
@@ -264,12 +266,12 @@ module.exports = function (router, db) {
 						collection.updateOne({'trackId' : trackId}, {$set: req.body}, {w: 1}, function (err) {
 							if (err) {
 								logger.error('database error', err.code);
-								res.status(507).send({error: 'DatabaseUpdateError', description: err.message});		
+								res.status(507).send({error: 'DatabaseUpdateError', description: err.message});
 							} else {
 								res.status(200).send(item);
 							}
 						});
-					} else { 
+					} else {
 						logger.warn('not found');
 						res.status(403).send({error: 'Forbidden', description: 'track does not belong to requesting user'});
 					}
@@ -277,9 +279,9 @@ module.exports = function (router, db) {
 			});
 		} else {
 			logger.error('validator ', v.errors);
-			res.status(400).send({error: 'InvalidInput','description': v.errors});			
+			res.status(400).send({error: 'InvalidInput','description': v.errors});
 		}
-	}); 
+	});
 
 	// Delete track (must have valid token to succeed)
 	router.delete('/v1/tracks/:trackId', isValidToken, function(req, res) {
@@ -294,7 +296,7 @@ module.exports = function (router, db) {
 						picturesCollection.remove({'trackId' : trackId}, {w: 1}, function (err) {
 							if (err) {
 								logger.error('database error', err.code);
-								res.status(507).send({error: 'DatabasePicRemoveError', description: err.message});		
+								res.status(507).send({error: 'DatabasePicRemoveError', description: err.message});
 							} else {
 								logger.info('deleted pictures for track: ' + trackId);
 								tracksCollection.remove({'trackId' : trackId}, {w: 1}, function (err) {
@@ -307,14 +309,14 @@ module.exports = function (router, db) {
 								});
 							}
 						});
-					});	
-				} else { 
+					});
+				} else {
 					logger.warn('not found');
 					res.status(403).send({error: 'Forbidden', description: 'track does not belong to requesting user'});
 				}
 			});
 		});
-	}); 
+	});
 
 	// Get a single track
 	router.get('/v1/tracks/:trackId', function(req, res) {
@@ -324,15 +326,15 @@ module.exports = function (router, db) {
 			collection.findOne({'trackId' : trackId}, {_id: false, trackGPXBlob: false, trackPhotos: false}, function (err, item) {
 				if (item) {
 					res.send(item);
-				} else { 
+				} else {
 					logger.warn('not found');
 					res.status(404).send({error: 'NotFound', description: 'track id not found'});
 				}
 			});
 		});
-	}); 
+	});
 
-	// Get motd (MAX_MOTD most recently created tracks)	
+	// Get motd (MAX_MOTD most recently created tracks)
 	router.get('/v1/motd', function(req, res) {
 		logger.info('get motd');
 		db.collection('tracks', function (err, collection) {
@@ -346,13 +348,13 @@ module.exports = function (router, db) {
 					var result = {motd: {motdTracks: {}}};
 					result.motd.motdTracks = motd;
 					res.send(result);
-				} else { 
+				} else {
 					logger.warn('motd not found');
 					res.status(404).send({error: 'NotFound', description: 'motd not found'});
 				}
 			});
 		});
-	}); 
+	});
 
 	// Get the geotags structure for a single track
 	// This getter is here for compatibility with static version of rikitraki
@@ -368,13 +370,13 @@ module.exports = function (router, db) {
 					result.geoTags.trackId = item.trackId;
 					result.geoTags.trackPhotos =  item.trackPhotos;
 					res.send(result);
-				} else { 
+				} else {
 					logger.warn('not found');
 					res.status(404).send({error: 'NotFound', description: 'track id not found'});
 				}
 			});
 		});
-	}); 
+	});
 
 	// Get GPX for a track
 	router.get('/v1/tracks/:trackId/GPX', function(req, res) {
@@ -383,16 +385,16 @@ module.exports = function (router, db) {
 		db.collection('tracks', function (err, collection) {
 			collection.findOne({'trackId' : trackId}, function (err, item) {
 				if (item) {
-					// Build the response 
+					// Build the response
 					res.setHeader('Content-Type', 'application/gpx+xml');
 					res.send(item.trackGPXBlob);
-				} else { 
+				} else {
 					logger.warn('not found');
 					res.status(404).send({error: 'NotFound', description: 'track id not found'});
 				}
 			});
 		});
-	}); 
+	});
 
 	// Get thumbnail for a track
 	router.get('/v1/tracks/:trackId/thumbnail/:picIndex', function(req, res) {
@@ -410,18 +412,18 @@ module.exports = function (router, db) {
 							logger.warn('thumb not found');
 							res.status(404).send({error: 'NotFound', description: 'thumbnail not found'});
 						} else {
-							// Build the response 
+							// Build the response
 							res.setHeader('Content-Type', 'image/jpeg');
 							res.send(item.trackPhotos[picIndex].picThumbBlob.buffer);
 						}
-					} else { 
+					} else {
 						logger.warn('not found');
 						res.status(404).send({error: 'NotFound', description: 'track id not found'});
 					}
 				});
 			});
 		}
-	}); 
+	});
 
 	// Get picture for a track
 	router.get('/v1/tracks/:trackId/picture/:picIndex', function(req, res) {
@@ -435,10 +437,10 @@ module.exports = function (router, db) {
 			db.collection('pictures', function (err, collection) {
 				collection.findOne({'trackId' : trackId, 'picIndex' : picIndex}, function (err, item) {
 					if (item) {
-						// Build the response 
+						// Build the response
 						res.setHeader('Content-Type', 'image/jpeg');
 						res.send(item.picBlob.buffer);
-					} else { 
+					} else {
 						logger.warn('not found');
 						res.status(404).send({error: 'NotFound', description: 'picture not found'});
 					}
@@ -463,19 +465,19 @@ module.exports = function (router, db) {
 							picturesCollection.remove({'trackId' : trackId, 'picIndex' : picIndex}, {w: 1}, function (err) {
 								if (err) {
 									logger.error('database error', err.code);
-									res.status(507).send({error: 'DatabasePicRemoveError', description: err.message});		
+									res.status(507).send({error: 'DatabasePicRemoveError', description: err.message});
 								} else {
 									logger.info('deleted picture ' + picIndex +' for track: ' + trackId);
 									res.status(204).send();
 								}
 							});
-						});	
-					} else { 
+						});
+					} else {
 						logger.warn('not found');
 						res.status(403).send({error: 'Forbidden', description: 'track does not belong to requesting user'});
 					}
 				});
 			});
 		}
-	}); 
+	});
 };
