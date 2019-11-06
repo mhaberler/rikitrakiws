@@ -3,7 +3,6 @@
 var log4js = require('log4js');
 var logger = log4js.getLogger();
 var express = require('express');
-var favicon = require('serve-favicon');
 var bodyParser = require('body-parser');
 var port = process.env.OPENSHIFT_NODEJS_PORT || 3000;
 var ipaddress = process.env.OPENSHIFT_NODEJS_IP;
