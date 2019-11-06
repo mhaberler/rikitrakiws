@@ -19,6 +19,7 @@ var schemas = {
 			trackFav: {type: 'boolean'},
 			trackGPX: {type: 'string'},
 			trackName: {type: 'string', maxLength: 200},
+			trackVehicle: {type: 'string', maxLength: 200},
 			trackDescription: {type: 'string', maxLength: 5000},
 			hasPhotos: {type: 'boolean'},
 			trackGPXBlob: {type: 'string', maxLength: 4000000},
@@ -60,6 +61,7 @@ var schemas = {
 			trackType: {enum: ['Hiking', 'Biking', 'Boating', 'Offroad', 'Motorcycling', 'Flying', 'Ballooning', 'Skiing', 'Snowshoeing', 'Getting There']},
 			trackFav: {type: 'boolean'},
 			trackName: {type: 'string', maxLength: 200},
+			trackVehicle: {type: 'string', maxLength: 200},
 			trackDescription: {type: 'string', maxLength: 5000},
 			hasPhotos: {type: 'boolean'},
 			trackPhotos: {
@@ -120,7 +122,31 @@ var schemas = {
 			email: {type: 'string', format: 'email'}
 		},
 		additionalProperties: false
-	}
+	},
+	vehicleSchema: {
+		type: 'object',
+		properties: {
+			vehicleId: {type: 'string'},
+			name: {type: 'string', maxLength: 200},
+			blob: {type: 'string', maxLength: 4000000}, // glb file
+			description: {type: 'string', maxLength: 5000},
+			owner: {type: 'string', pattern: '^[^~,;%\\`\'\"<>{}()\\[\\]/]*$', minLength: 6, maxLength: 40},
+		},
+		additionalProperties: false,
+		required: ['name']
+	},
+	vehicleRegistrationSchema: {
+		type: 'object',
+		properties: {
+			vehicleId: {type: 'string'},
+			name: {type: 'string', maxLength: 200},
+			blob: {type: 'string', maxLength: 4000000}, // glb file
+			description: {type: 'string', maxLength: 5000},
+			owner: {type: 'string', pattern: '^[^~,;%\\`\'\"<>{}()\\[\\]/]*$', minLength: 6, maxLength: 40},
+		},
+		additionalProperties: false,
+		required: ['name', 'blob']
+	},
 };
 
 module.exports.schemas = schemas;
