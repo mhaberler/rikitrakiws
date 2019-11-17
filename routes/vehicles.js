@@ -200,6 +200,7 @@ module.exports = function(router, db) {
             var p = {
                 _id: false,
                 // blob: false, // req.query.blob == 'true',
+                vehicleId: true,
                 vehicleName: true,
                 vehicleType: true,
                 vehicleDescription: true,
