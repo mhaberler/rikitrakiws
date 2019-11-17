@@ -247,7 +247,7 @@ module.exports = function(router, db) {
                 $and: [{
                     'vehicleId': vehicleId
                 }, {
-                    'owner': req.user
+                    'vehicleOwner': req.user
                 }]
             }, {
                 _id: false,
