@@ -142,7 +142,7 @@ var schemas = {
 		properties: {
 			vehicleId: {type: 'string'},
 			vehicleName: {type: 'string', maxLength: 200},
-			vehicleType: {enum: ['png', 'gltf']},
+			vehicleType: {enum: ['png', 'gltf','glb']},
 			vehicleBlob: {type: 'string', maxLength: 4000000}, // glb file
 			vehicleBlobType: {type: 'string', maxLength: 10}, // glb, png..
 			vehicleDescription: {type: 'string', maxLength: 5000},
