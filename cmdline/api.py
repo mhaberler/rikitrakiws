@@ -109,10 +109,11 @@ class RikiTrakiWSAPI(object):
         r = requests.get(url, headers={'Authorization': 'JWT {}'.format(rws.jwt)}, json=query)
         return r.text
 
-rws = RikiTrakiWSAPI()
+rws = RikiTrakiWSAPI(server="rikitrakiws.mah.priv.at",method="https",port=443)
 
 if True:
     t = rws.getJWTToken()
+    print("got jwt")
     if rws.jwt_secret:
         print("decoded token: {}".format(jwt.decode(t, rws.jwt_secret, algorithms=['HS256'])))
     else:
