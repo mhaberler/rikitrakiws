@@ -156,42 +156,42 @@ module.exports = function(router, db) {
         }
     });
 
-    // retrieve vehicle info
-    // include blob if ?blob=true is given
-    router.get('/v1/vehicles/:vehicleId', function(req, res) {
-        var vehicleId = req.params.vehicleId;
-        logger.debug('retrieve vehicle: ' + vehicleId);
-        db.collection('vehicles', function(err, collection) {
-            var p = {
-                _id: false,
-                vehicleName: true,
-                vehicleType: true,
-                vehicleDescription: true,
-                createdDate: true,
-                vehicleOwner: true,
-                vehicleBlobType: true
-            };
-//            if (req.query.blob === 'true') {
-                if (req.query.blob === 'true') {
-                logger.debug('retrieve vehicle: ' + vehicleId + ' including blob');
-                p.vehicleBlob = true;
-            }
-            collection.findOne({
-                'vehicleId': vehicleId
-            }, p, function(err, item) {
-                if (item) {
-                    res.send(item);
-                }
-                else {
-                    logger.error('vehicle ' + vehicleId + ' not found');
-                    res.status(404).json({
-                        error: 'NotFound',
-                        description: 'vehicle not found'
-                    });
-                }
-            });
-        });
-    });
+//     // retrieve vehicle info
+//     // include blob if ?blob=true is given
+//     router.get('/v1/vehicles/:vehicleId', function(req, res) {
+//         var vehicleId = req.params.vehicleId;
+//         logger.debug('retrieve vehicle: ' + vehicleId);
+//         db.collection('vehicles', function(err, collection) {
+//             var p = {
+//                 _id: false,
+//                 vehicleName: true,
+//                 vehicleType: true,
+//                 vehicleDescription: true,
+//                 createdDate: true,
+//                 vehicleOwner: true,
+//                 vehicleBlobType: true
+//             };
+// //            if (req.query.blob === 'true') {
+//                 if (req.query.blob === 'true') {
+//                 logger.debug('retrieve vehicle: ' + vehicleId + ' including blob');
+//                 p.vehicleBlob = true;
+//             }
+//             collection.findOne({
+//                 'vehicleId': vehicleId
+//             }, p, function(err, item) {
+//                 if (item) {
+//                     res.send(item);
+//                 }
+//                 else {
+//                     logger.error('vehicle ' + vehicleId + ' not found');
+//                     res.status(404).json({
+//                         error: 'NotFound',
+//                         description: 'vehicle ' + vehicleId + ' not found'
+//                     });
+//                 }
+//             });
+//         });
+//     });
 
     // retrieve all vehicles, including blob if ?blob=x is given
     router.get('/v1/vehicles/', function(req, res) {
@@ -199,7 +199,6 @@ module.exports = function(router, db) {
         db.collection('vehicles', function(err, collection) {
             var p = {
                 _id: false,
-                // blob: false, // req.query.blob == 'true',
                 vehicleId: true,
                 vehicleName: true,
                 vehicleType: true,
@@ -208,6 +207,14 @@ module.exports = function(router, db) {
                 vehicleOwner: true,
                 vehicleBlobType: true
             };
+            if (req.query.blob === 'true') {
+                logger.debug('retrieve vehicle: ' + vehicleId + ' including blob');
+                p.vehicleBlob = true;
+            }
+            var q = {};
+            if (req.query.vehicleId) {
+              q = {'vehicleId' : req.query.vehicleId};
+            }
             collection.find({}, {
                 limit: MAX_VEHICLES,
                 sort: {
