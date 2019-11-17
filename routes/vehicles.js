@@ -115,6 +115,7 @@ module.exports = function(router, db) {
             vehicle.vehicleName = req.body.name;
             vehicle.vehicleId = shortid.generate();
             vehicle.vehicleBlob = Buffer.from(req.body.blob, 'base64');
+            vehicle.vehicleBlobType = req.body.type;
             vehicle.vehicleDescription = req.body.description;
             vehicle.vehicleOwner = req.body.owner;
             vehicle.createdDate = new Date();
@@ -167,7 +168,8 @@ module.exports = function(router, db) {
                 vehicleType: true,
                 vehicleDescription: true,
                 createdDate: true,
-                vehicleOwner: true
+                vehicleOwner: true,
+                vehicleBlobType: true
             };
 //            if (req.query.blob === 'true') {
                 if (req.query.blob === 'true') {
@@ -198,11 +200,12 @@ module.exports = function(router, db) {
             var p = {
                 _id: false,
                 // blob: false, // req.query.blob == 'true',
-                vehicleId: true,
-                name: true,
-                description: true,
-                owner: true,
-                createdDate: true
+                vehicleName: true,
+                vehicleType: true,
+                vehicleDescription: true,
+                createdDate: true,
+                vehicleOwner: true,
+                vehicleBlobType: true
             };
             collection.find({}, {
                 limit: MAX_VEHICLES,
