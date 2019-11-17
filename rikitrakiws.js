@@ -5,7 +5,7 @@ var logger = log4js.getLogger();
 var express = require('express');
 var bodyParser = require('body-parser');
 var port = process.env.OPENSHIFT_NODEJS_PORT || 3000;
-var ipaddress = process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1";
+var ipaddress = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
 var loglevel = process.env.LOGLEVEL || 'DEBUG';
 
 var app = express();
