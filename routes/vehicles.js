@@ -17,93 +17,7 @@ module.exports = function(router, db) {
     var isValidToken = passport.authenticate('jwt', {
         session: false
     });
-    function buildTracksQuery (queryparms) {
-		var query = {};
 
-		// TODO: include latlng query inside of filter
-		if (queryparms.latlng) {
-			var latlng = queryparms.latlng.split(',');
-			var lnglat = [];
-			var distance = 0;
-			if (latlng.length === 2) {
-				lnglat[1] = parseFloat(latlng[0]);
-				lnglat[0] = parseFloat(latlng[1]);
-				if ((lnglat[0] < 180) && (lnglat[0] > -180) && (lnglat[1] < 90) && (lnglat[1] > -90)) {
-					if (queryparms.distance) {
-						distance = parseInt(queryparms.distance);
-						distance = distance ? distance : 0;
-					}
-					query = {trackGeoJson: {$near: {$geometry: {type: 'Point', coordinates: lnglat}, '$maxDistance': distance}}};
-					logger.info('query', query);
-				}
-			}
-		}
-
-		if (queryparms.filter) {
-			var filter = JSON.parse(queryparms.filter);
-			if (filter.username) {
-				query.username = {$regex : new RegExp('^' + filter.username)}; // Begins with
-			}
-			if (filter.trackFav) {
-				query.trackFav = true;
-			}
-			var i = 0;
-			if (filter.level) {
-				var levels = filter.level.split(',');
-				query.$and = [{$or: [] }];
-				for (i=0; i<levels.length; i++) {
-					query.$and[0].$or.push({trackLevel: levels[i]});
-				}
-			}
-			if (filter.activity) {
-				var activities = filter.activity.split(',');
-				var j = 0;
-				if (!query.$and) {
-					query.$and = [{$or: [] }];
-				} else {
-					j = 1;
-					query.$and.push({$or: [] });
-				}
-				for (i=0; i<activities.length; i++) {
-					if (activities[i] === 'Hiking') {
-						query.$and[j].$or.push({trackType: { $exists: false }});
-					}
-					query.$and[j].$or.push({trackType: activities[i]});
-				}
-			}
-			if (filter.country) {
-				query.trackRegionTags = {$in: [filter.country]};
-			}
-			if (filter.region) {
-				query.trackRegionTags = {$in: [filter.region]};
-			}
-		}
-		logger.info('query', query);
-		return query;
-	}
-
-    // retrieve number of vehicles
-    router.get('/v1/vehicles/number', function(req, res) {
-        logger.debug('get number of vehicles');
-        db.collection('vehicles', function(err, collection) {
-            //var query = buildTracksQuery(req.query);
-            collection.find(req.query).count(function(err, count) {
-                logger.debug('number of vehicles is...', count);
-                if (err) {
-                    logger.error('database error', err.message);
-                    res.status(507).send({
-                        error: 'DatabaseQueryError',
-                        description: err.message
-                    });
-                }
-                else {
-                    res.send({
-                        numberOfVehicles: count
-                    });
-                }
-            });
-        });
-    });
 
     // Create a vehicle (must have valid token to succeed)
     router.post('/v1/vehicles', isValidToken, function(req, res) {
@@ -155,42 +69,6 @@ module.exports = function(router, db) {
         }
     });
 
-//     // retrieve vehicle info
-//     // include blob if ?blob=true is given
-//     router.get('/v1/vehicles/:vehicleId', function(req, res) {
-//         var vehicleId = req.params.vehicleId;
-//         logger.debug('retrieve vehicle: ' + vehicleId);
-//         db.collection('vehicles', function(err, collection) {
-//             var p = {
-//                 _id: false,
-//                 vehicleName: true,
-//                 vehicleType: true,
-//                 vehicleDescription: true,
-//                 createdDate: true,
-//                 vehicleOwner: true,
-//                 vehicleBlobType: true
-//             };
-// //            if (req.query.blob === 'true') {
-//                 if (req.query.blob === 'true') {
-//                 logger.debug('retrieve vehicle: ' + vehicleId + ' including blob');
-//                 p.vehicleBlob = true;
-//             }
-//             collection.findOne({
-//                 'vehicleId': vehicleId
-//             }, p, function(err, item) {
-//                 if (item) {
-//                     res.send(item);
-//                 }
-//                 else {
-//                     logger.error('vehicle ' + vehicleId + ' not found');
-//                     res.status(404).json({
-//                         error: 'NotFound',
-//                         description: 'vehicle ' + vehicleId + ' not found'
-//                     });
-//                 }
-//             });
-//         });
-//     });
 
     // retrieve all vehicles, including blob if ?blob=x is given
     router.get('/v1/vehicles/', function(req, res) {
