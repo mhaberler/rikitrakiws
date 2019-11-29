@@ -10,7 +10,6 @@ var logger = log4js.getLogger();
 var schemas = require('../schemas/schemas').schemas;
 var validator = require('is-my-json-valid');
 var shortid = require('shortid');
-//var path    = require('path');
 
 
 module.exports = function(router, db) {
