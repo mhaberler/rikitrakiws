@@ -123,33 +123,29 @@ var schemas = {
 		},
 		additionalProperties: false
 	},
-	vehicleSchema: {
+	vehicleUpdateSchema: {
 		type: 'object',
 		properties: {
-			vehicleId: {type: 'string'},
-			vehicleName: {type: 'string', maxLength: 200},
-			vehicleType: {enum: ['png', 'gltf']},
-			vehicleBlob: {type: 'string', maxLength: 4000000}, // glb file
-			vehicleBlobType: {type: 'string', maxLength: 10}, // glb, png..
-			vehicleDescription: {type: 'string', maxLength: 5000},
-			vehicleOwner: {type: 'string', pattern: '^[^~,;%\\`\'\"<>{}()\\[\\]/]*$', minLength: 6, maxLength: 40},
-		},
-		additionalProperties: false,
-		required: ['vehicleName']
-	},
-	vehicleRegistrationSchema: {
-		type: 'object',
-		properties: {
-			vehicleId: {type: 'string'},
 			name: {type: 'string', maxLength: 200},
 			type: {enum: ['png', 'gltf','glb']},
-			blob: {type: 'string', maxLength: 4000000}, // glb file
-			blobtype: {type: 'string', maxLength: 10}, // glb, png..
+			blob: {type: 'string', maxLength: 10000000}, // glb file
 			description: {type: 'string', maxLength: 5000},
 			owner: {type: 'string', pattern: '^[^~,;%\\`\'\"<>{}()\\[\\]/]*$', minLength: 6, maxLength: 40},
 		},
 		additionalProperties: false,
-		required: ['name', 'blob', 'blobtype']
+		required: ['name']
+	},
+	vehicleRegistrationSchema: {
+		type: 'object',
+		properties: {
+			name: {type: 'string', maxLength: 200},
+			type: {enum: ['png', 'gltf','glb']},
+			blob: {type: 'string', maxLength: 10000000}, // glb file
+			description: {type: 'string', maxLength: 5000},
+			owner: {type: 'string', pattern: '^[^~,;%\\`\'\"<>{}()\\[\\]/]*$', minLength: 6, maxLength: 40},
+		},
+		additionalProperties: false,
+		required: ['name', 'blob', 'type']
 	},
 };
 
