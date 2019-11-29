@@ -7,7 +7,8 @@ var express = require('express');
 var router = express.Router();
 var mongo = require('mongodb');
 var mongoClient = mongo.MongoClient;
-var MONGO_URL = process.env.MONGODB_DB_URL ? (process.env.MONGODB_DB_URL) : 'mongodb://127.0.0.1/rikitraki';
+var MONGO_URL = process.env.MONGODB_DB_URL ? (process.env.MONGODB_DB_URL) : 'mongodb://127.0.0.1/';
+var MONGO_DB_NAME = process.env.MONGO_DB_NAME ? (process.env.MONGO_DB_NAME) : 'rikitraki';
 var JWT_SECRET = process.env.JWT_SECRET || 'eventually instead of this we will use a public key';
 
 var passport = require('passport');
@@ -34,7 +35,7 @@ mongoClient.connect(MONGO_URL, function(err, db) {
 			logger.error('500 - cannot connect to database');
 			res.status(500).send({error: 'DBError', description: 'cannot connect to database'});
 		} else {
-			next();
+		next();
 		}
 	});
 
