@@ -5,6 +5,11 @@ import json
 import os
 import jwt
 import base64
+import uuid
+import glob
+import os
+import sys
+import hashlib
 
 class BackendError(Exception):
     def __init__(self, value):
@@ -73,6 +78,7 @@ class RikiTrakiWSAPI(object):
         url = "{}://{}:{}/api/v1/vehicles/number".format(self.method, self.server, self.port)
         r = requests.get(url)
         if r.status_code == 200:
+            print(r.json())
             return r.json()["numberOfVehicles"]
         raise BackendError("getNumVehicles failed: error={} {}".format(r.error,r.message))
 
@@ -85,13 +91,21 @@ class RikiTrakiWSAPI(object):
 
     def createVehicle(self, name, description, owner, filename, type):
         with open(filename, 'rb') as fd:
+            b = fd.read()
+            a = base64.b64encode(b)
+            b64 = a.decode('utf-8')
+            m = hashlib.md5()
+            m.update(b)
+            #print("blob bin md5=",m.hexdigest(),'sliceab=', b[0:10],'slicea=', a[0:10],'sliceb64=', b64[0:10])
+            #print("blob bin md5=",m.hexdigest(),'sliceb64=', b64[0:30])
             payload = {
                 'name' : name,
                 'description' : description,
                 'owner' : owner,
-                'blob' : str(base64.b64encode(fd.read())),
-                'blobtype' : type
+                'blob' : b64,
+                'type' : type
             }
+
             url = "{}://{}:{}/api/v1/vehicles".format(self.method, self.server, self.port)
             r = requests.post(url, headers={'Authorization': 'JWT {}'.format(rws.jwt)},  json=payload)
             if r.status_code == 200:
@@ -103,9 +117,9 @@ class RikiTrakiWSAPI(object):
         r = requests.delete(url, headers={'Authorization': 'JWT {}'.format(rws.jwt)})
         return r.text
 
-    def getVehicles(self, query):
+    def getVehicles(self, query={}):
         url = "{}://{}:{}/api/v1/vehicles".format(self.method, self.server, self.port, id)
-        r = requests.get(url, headers={'Authorization': 'JWT {}'.format(rws.jwt)}, json=query)
+        r = requests.get(url, headers={'Authorization': 'JWT {}'.format(rws.jwt)}, params=query)
         return r.json()
 
     # def getVehicle(self, id):
@@ -125,6 +139,63 @@ if True:
     else:
         print("token: {}".format(t))
 
+
+#    t = rws.getVehicles({'name': 'OE-SOE-retry', 'blob': True})
+#    with open('OE-SOE-retry.b64-fromserver', 'w') as fd:
+#        fd.write(t["vehicles"]["OE-SOE-retry"]["blob"])
+
+    #print("vehicles:\n{}".format(json.dumps(t, indent=4, sort_keys=True)))
+
+#if False:
+
+    # all vehicles
+#    t = rws.getVehicles({})
+#    print("vehicles:\n{}".format(json.dumps(t, indent=4, sort_keys=True)))
+
+    glbdir = "/Users/mah/Ballon/src/rikitraki/static/images/"
+    glbs = [x for x in os.listdir(glbdir) if x.endswith(".glb")]
+    for g in glbs:
+        fn = glbdir + g
+        vn = os.path.splitext(os.path.basename(g))[0]
+        print("inserting: ",vn)
+        v = rws.createVehicle(vn, "n/a",rws.user, fn, "glb")
+    sys.exit(0)
+
+
+
+    t = rws.getNumVehicles()
+    print("number of vehicles: {}".format(t))
+
+if False:
+
+    vn = "vehicle-" + uuid.uuid4().hex
+    #fn = "/Users/mah/Ballon/src/rikitraki/images/OE-SOE.glb"
+    fn = "foobar.base64"
+    v = rws.createVehicle(vn, "no aans",rws.user, fn, "png")
+    print("vehicle:\n{}".format(json.dumps(v, indent=4, sort_keys=True)))
+
+    t = rws.getVehicles({'name': vn, 'blob': True})
+    print("vehicles:\n{}".format(json.dumps(t, indent=4, sort_keys=True)))
+
+    # all vehicles
+    t = rws.getVehicles({'blob': True})
+    print("vehicles:\n{}".format(json.dumps(t, indent=4, sort_keys=True)))
+
+    t = rws.deleteVehicle(vn)
+    print("deleted vehicle:\n{}".format(t))
+
+if False:
+
+    fn = "foobar.base64"
+    v = rws.createVehicle("fasel2", "no aans",rws.user, fn, "png")
+    print("vehicle:\n{}".format(json.dumps(v, indent=4, sort_keys=True)))
+
+
+
+    t = rws.deleteVehicle(v["id"])
+    print("deleted vehicle:\n{}".format(t))
+
+
     t = rws.getNumVehicles()
     print("number of vehicles: {}".format(t))
 
@@ -137,14 +208,6 @@ if True:
             v = rws.getVehicles({'vehicleId' : id, 'blob' : True})
             print("vehicles:\n{}".format(json.dumps(v, indent=4, sort_keys=True)))
 
-
-    fn = "foobar.base64"
-    #fn = "/Users/mah/Ballon/src/rikitraki/images/OE-SOE.glb"
-    v = rws.createVehicle("fasel", "no aans","mail17", fn, "png")
-    print("vehicle:\n{}".format(json.dumps(v, indent=4, sort_keys=True)))
-
-    t = rws.deleteVehicle(v["id"])
-    print("deleted vehicle:\n{}".format(t))
 
 if False:
     t = rws.getNumVehicles()
