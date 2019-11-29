@@ -36,6 +36,12 @@ app.use(bodyParser.raw({limit: '10mb', type: 'image/jpeg'}));
 
 app.use('/api/', require('./routes/').router);
 
-app.listen(port, ipaddress, function () {
+const server = app.listen(port, ipaddress, function () {
 	logger.info('starting rikitrakiws', this.address());
+});
+
+process.on('SIGTERM', () => {
+  	server.close(() => {
+    	logger.info('stopping rikitrakiws')
+  	})
 });
