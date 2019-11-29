@@ -10,7 +10,7 @@ var logger = log4js.getLogger();
 var schemas = require('../schemas/schemas').schemas;
 var validator = require('is-my-json-valid');
 var shortid = require('shortid');
-
+const asyncHandler = require('express-async-handler');
 
 module.exports = function(router, db) {
 
@@ -18,6 +18,11 @@ module.exports = function(router, db) {
         session: false
     });
 
+    router.get('/v1/vehicles/number', asyncHandler(async (req, res, next) => {
+        const vehicles = await db.collection('vehicles');
+        const count = await vehicles.find(req.query).count();
+        res.send({numberOfVehicles: count});
+    }));
 
     // Create a vehicle (must have valid token to succeed)
     router.post('/v1/vehicles', isValidToken, function(req, res) {
