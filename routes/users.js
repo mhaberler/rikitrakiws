@@ -4,7 +4,7 @@
 var passport = require('passport');
 var jwt = require('jsonwebtoken');
 var JWT_SECRET = require('./index').JWT_SECRET;
-var JWT_ISSUER = 'rikitraki.mah.priv.at';
+var JWT_ISSUER = process.env.JWT_ISSUER || 'rikitraki.mah.priv.at';
 
 var mailgunApiKey = process.env.MAILGUN_API_KEY;
 var mailgunDomain = 'mg.mah.priv.at';
