@@ -26,16 +26,17 @@ module.exports = function(router, db) {
 
     // Create a vehicle (must have valid token to succeed)
     router.post('/v1/vehicles', isValidToken, function(req, res) {
-        logger.debug('add vehicle', req.body);
+        logger.debug('add vehicle', req.body.name);
+
         var v = validator(schemas.vehicleRegistrationSchema);
         if (v(req.body)) {
             var vehicle = {};
-            vehicle.vehicleName = req.body.name;
-            vehicle.vehicleId = shortid.generate();
-            vehicle.vehicleBlob = Buffer.from(req.body.blob, 'base64');
-            vehicle.vehicleBlobType = req.body.blobtype;
-            vehicle.vehicleDescription = req.body.description;
-            vehicle.vehicleOwner = req.body.owner;
+            vehicle.name = req.body.name;
+            // let b = Buffer.from(req.body.blob, 'base64');
+            vehicle.blob = req.body.blob;
+            vehicle.type = req.body.type;
+            vehicle.description = req.body.description;
+            vehicle.owner = req.body.owner;
             vehicle.createdDate = new Date();
 
             db.collection('vehicles').insert(vehicle, {
@@ -74,30 +75,32 @@ module.exports = function(router, db) {
         }
     });
 
-
-    // retrieve all vehicles, including blob if ?blob=x is given
+    // retrieve one or more vehicles
+    // query: name=vehiclename -> retrieve a single vehicle
+    // query: owner=foo -> all vehicles of user foo
+    // includie blob if ?blob=x is given
     router.get('/v1/vehicles/', function(req, res) {
-        logger.info('retrieve vehicles: ' + req.query);
         db.collection('vehicles', function(err, collection) {
             var p = {
                 _id: false,
-                vehicleId: true,
-                vehicleName: true,
-                vehicleType: true,
-                vehicleDescription: true,
+                name: true,
+                type: true,
+                description: true,
                 createdDate: true,
-                vehicleOwner: true,
-                vehicleBlobType: true
+                owner: true,
             };
-            if (req.query.blob === 'true') {
-                logger.debug('retrieve vehicle: ' + vehicleId + ' including blob');
-                p.vehicleBlob = true;
+            if (req.query.blob ) {
+                p.blob = true;
             }
             var q = {};
-            if (req.query.vehicleId) {
-              q = {'vehicleId' : req.query.vehicleId};
+            if (req.query.name) {
+                q.name = req.query.name;
             }
-            collection.find({}, {
+            if (req.query.owner) {
+                q.owner = req.query.owner;
+            }
+
+            collection.find(q, {
                 limit: MAX_VEHICLES,
                 sort: {
                     createdDate: -1
@@ -107,7 +110,7 @@ module.exports = function(router, db) {
                 var result = {};
                 result.vehicles = {};
                 stream.on('data', function(data) {
-                    result.vehicles[data.vehicleId] = data;
+                    result.vehicles[data.name] = data;
                 });
                 stream.on('end', function() {
                     if (Object.keys(result.vehicles).length === 0) {
@@ -127,24 +130,24 @@ module.exports = function(router, db) {
         });
     });
 
-    // Delete a vehicle by id (must have valid token to succeed)
-    router.delete('/v1/vehicles/:vehicleId', isValidToken, function(req, res) {
-        var vehicleId = req.params.vehicleId;
-        logger.info('delete vehicle: ' + vehicleId);
+    // Delete a vehicle by name (must have valid token to succeed)
+    router.delete('/v1/vehicles/:name', isValidToken, function(req, res) {
+        var vehicle = req.params.name;
+        logger.info('delete vehicle: ' + vehicle);
         db.collection('vehicles', function(err, vehiclesCollection) {
             vehiclesCollection.findOne({
                 $and: [{
-                    'vehicleId': vehicleId
+                    'name': vehicle
                 }, {
-                    'vehicleOwner': req.user
+                    'owner': req.user
                 }]
             }, {
                 _id: false,
-                vehicleId: true
+                name: true
             }, function(err, item) {
                 if (item) {
                     vehiclesCollection.remove({
-                        'vehicleId': vehicleId
+                        'name': vehicle
                     }, {
                         w: 1
                     }, function(err) {
@@ -163,7 +166,7 @@ module.exports = function(router, db) {
                 else {
                     res.status(507).send({
                         error: 'vehicle not found',
-                        description: 'id: ' + vehicleId
+                        description: 'name: ' + vehicle
                     });
                 }
             });
